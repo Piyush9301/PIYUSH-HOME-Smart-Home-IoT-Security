@@ -12,6 +12,9 @@ A responsive web dashboard for monitoring and controlling **PIYUSH HOME**, built
 
 ## Features
 
+
+\\\
+
 - **Live Sensor Telemetry**
   - **Temperature & Humidity (DHT22 — GPIO 4):** Real-time temperature with °C / °F toggle, humidity percentage, comfort status, heat index, and a live SVG sparkline.
   - **Combustible Gas & Smoke (MQ-2 — GPIO 34):** PPM readout, threshold monitoring, visual meter, and spike test trigger.
