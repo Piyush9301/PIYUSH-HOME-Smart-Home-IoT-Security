@@ -2,6 +2,12 @@
 
 A responsive web dashboard for monitoring and controlling **PIYUSH HOME**, built for ESP32 smart automation, environmental and security sensors, an ESP32-CAM MJPEG CCTV stream, and a 20×4 I2C LCD display—complete with a built-in simulation mode for testing without hardware.
 
+## Preview
+
+![PIYUSH HOME README & Hardware Setup Preview](assets/piyush-home-preview.png)
+
+> Save the image above as `assets/piyush-home-preview.png` (or update the path to your hosted screenshot URL) so it renders cleanly in your GitHub repository.
+
 ## Features
 
 - **Live Sensor Telemetry**
