@@ -1,2 +1,1860 @@
 # PIYUSH-HOME-Smart-Home-IoT-Security
 PIYUSH HOME    NAME OF WEBSITE make and  it has a element of   TEMPRETURE AND HUMIDITE , mq-2 ,mq-135 , 5  switch , esp32 webcam  for cctv ,  motion sensor , 20*4  lcd display  for show data and custom data show .
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PIYUSH HOME — Smart IoT &amp; CCTV Control Hub</title>
+
+    <!-- Google Fonts: Inter for crisp UI & JetBrains Mono for authentic 20x4 LCD characters -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tailwind Custom Configuration for Fonts and Subtle Animations -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    boxShadow: {
+                        'lcd-blue': 'inset 0 0 24px rgba(14, 165, 233, 0.35), 0 0 20px rgba(14, 165, 233, 0.2)',
+                        'lcd-green': 'inset 0 0 24px rgba(132, 204, 22, 0.35), 0 0 20px rgba(132, 204, 22, 0.2)',
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="font-sans antialiased bg-slate-100 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors duration-300 selection:bg-cyan-500/30">
+
+    <!-- ==================== TOP NAVIGATION BAR ==================== -->
+    <header class="sticky top-0 z-40 backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-wrap items-center justify-between gap-3">
+            <!-- Brand Identity: PIYUSH HOME -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/25 shrink-0">
+                    <!-- Home IoT Icon -->
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10.5L12 3l9 7.5M5 9.5V20a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V9.5"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-400 dark:to-blue-400 bg-clip-text text-transparent">
+                            PIYUSH HOME
+                        </h1>
+                        <span id="connectionBadge" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                            <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                            SIMULATION
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">ESP32 Smart Automation • Sensors • CCTV • 20×4 LCD</p>
+                </div>
+            </div>
+
+            <!-- Header Actions: Clock, ESP32 Settings, Theme Toggle -->
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Live Digital Clock -->
+                <div class="hidden md:flex flex-col items-end pr-2 border-r border-slate-200 dark:border-slate-800">
+                    <span id="liveTime" class="text-sm font-mono font-bold text-slate-800 dark:text-slate-100">--:--:--</span>
+                    <span id="liveDate" class="text-[11px] text-slate-500 dark:text-slate-400">Loading date...</span>
+                </div>
+
+                <!-- ESP32 Hardware Settings Button -->
+                <button id="openSettingsBtn" type="button"
+                    class="inline-flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-200/80 hover:bg-slate-300/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-100 border border-slate-300 dark:border-slate-700 transition active:scale-95">
+                    <svg class="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>ESP32 Setup</span>
+                </button>
+
+                <!-- Dark / Light Theme Toggle -->
+                <button id="themeToggleBtn" type="button" aria-label="Toggle theme"
+                    class="p-2.5 rounded-xl bg-slate-200/80 hover:bg-slate-300/80 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-amber-400 border border-slate-300 dark:border-slate-700 transition active:scale-95">
+                    <!-- Sun Icon (shown in dark mode) -->
+                    <svg id="sunIcon" class="w-4 h-4 hidden dark:block" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    <!-- Moon Icon (shown in light mode) -->
+                    <svg id="moonIcon" class="w-4 h-4 block dark:hidden" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ==================== ALERT BANNER (Hidden unless gas/motion alarm triggered) ==================== -->
+    <div id="globalAlertBanner" class="hidden bg-rose-600 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2.5 flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 text-sm font-semibold">
+                <svg class="w-5 h-5 animate-bounce shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span id="globalAlertText">ALERT: Hazard detected in PIYUSH HOME!</span>
+            </div>
+            <button id="dismissAlertBtn" type="button" class="px-3 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-xs font-bold transition">
+                Acknowledge
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== MAIN DASHBOARD CONTAINER ==================== -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+        <!-- SECTION 1: ENVIRONMENTAL & SECURITY SENSORS (4-Card Responsive Grid) -->
+        <section aria-label="Sensor Telemetry">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                    Live Sensor Telemetry
+                </h2>
+                <span id="lastUpdatedLabel" class="text-xs font-mono text-slate-500 dark:text-slate-400">Updated: Just now</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+
+                <!-- CARD 1: TEMPERATURE & HUMIDITY (DHT22) -->
+                <div class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:border-cyan-500/40 transition flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between gap-2 mb-4">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-10 h-10 rounded-xl bg-orange-500/15 text-orange-500 flex items-center justify-center">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M14 14.76V3.5a2.5 2.5 0 00-5 0v11.26a4.5 4.5 0 105 0z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100">Temp &amp; Humidity</h3>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">DHT22 • GPIO 4</p>
+                                </div>
+                            </div>
+                            <!-- Unit Toggle (°C / °F) -->
+                            <button id="tempUnitToggle" type="button"
+                                class="px-2.5 py-1 rounded-lg text-xs font-bold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition">
+                                °C
+                            </button>
+                        </div>
+
+                        <!-- Temperature & Humidity Readouts -->
+                        <div class="grid grid-cols-2 gap-3 mb-4">
+                            <div class="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3 border border-slate-200/70 dark:border-slate-700/50">
+                                <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Temperature</span>
+                                <div class="mt-1 flex items-baseline gap-1">
+                                    <span id="tempValue" class="text-2xl font-extrabold font-mono text-orange-500">26.4</span>
+                                    <span id="tempUnitDisplay" class="text-xs font-bold text-slate-500">°C</span>
+                                </div>
+                            </div>
+                            <div class="rounded-xl bg-slate-50 dark:bg-slate-800/60 p-3 border border-slate-200/70 dark:border-slate-700/50">
+                                <span class="text-[11px] font-medium text-slate-500 dark:text-slate-400">Humidity</span>
+                                <div class="mt-1 flex items-baseline gap-1">
+                                    <span id="humValue" class="text-2xl font-extrabold font-mono text-sky-500">54</span>
+                                    <span class="text-xs font-bold text-slate-500">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comfort Level & Mini Sparkline SVG -->
+                    <div>
+                        <div class="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 mb-1.5">
+                            <span>Comfort: <strong id="comfortStatus" class="text-emerald-500">Optimal</strong></span>
+                            <span>Heat Index: <span id="heatIndexVal" class="font-mono">27.1°C</span></span>
+                        </div>
+                        <div class="w-full h-10 rounded-xl bg-slate-50 dark:bg-slate-800/50 px-2 py-1 overflow-hidden border border-slate-200/60 dark:border-slate-700/40">
+                            <svg id="tempSparkline" class="w-full h-full" viewBox="0 0 200 32" preserveAspectRatio="none">
+                                <polyline id="tempSparkPath" fill="none" stroke="#f97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="0,16 200,16"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: MQ-2 COMBUSTIBLE GAS & SMOKE SENSOR -->
+                <div id="mq2Card" class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:border-cyan-500/40 transition flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between gap-2 mb-4">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-500 flex items-center justify-center">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100">MQ-2 Gas &amp; Smoke</h3>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">LPG / Smoke • GPIO 34</p>
+                                </div>
+                            </div>
+                            <span id="mq2Badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">
+                                SAFE
+                            </span>
+                        </div>
+
+                        <div class="flex items-baseline justify-between mb-2">
+                            <div class="flex items-baseline gap-1.5">
+                                <span id="mq2Value" class="text-3xl font-extrabold font-mono text-slate-900 dark:text-white">142</span>
+                                <span class="text-xs font-bold text-slate-500">PPM</span>
+                            </div>
+                            <span class="text-[11px] text-slate-500 dark:text-slate-400">Threshold: 400 PPM</span>
+                        </div>
+
+                        <!-- Gas Concentration Bar -->
+                        <div class="w-full h-2.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden mb-3">
+                            <div id="mq2Bar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width: 18%"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400">LPG • CH₄ • Smoke</span>
+                        <button id="simGasBtn" type="button"
+                            class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-amber-500/15 hover:bg-amber-500/25 text-amber-600 dark:text-amber-400 border border-amber-500/30 transition active:scale-95">
+                            Test Spike
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CARD 3: MQ-135 AIR QUALITY SENSOR -->
+                <div id="mq135Card" class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:border-cyan-500/40 transition flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between gap-2 mb-4">
+                            <div class="flex items-center gap-2.5">
+                                <div class="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-500 flex items-center justify-center">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100">MQ-135 Air Quality</h3>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">CO₂ / NH₃ / VOC • GPIO 35</p>
+                                </div>
+                            </div>
+                            <span id="mq135Badge" class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">
+                                FRESH
+                            </span>
+                        </div>
+
+                        <div class="flex items-baseline justify-between mb-2">
+                            <div class="flex items-baseline gap-1.5">
+                                <span id="mq135Value" class="text-3xl font-extrabold font-mono text-slate-900 dark:text-white">418</span>
+                                <span class="text-xs font-bold text-slate-500">PPM</span>
+                            </div>
+                            <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">AQI: <strong id="aqiScore" class="font-mono text-emerald-500">42</strong></span>
+                        </div>
+
+                        <!-- Air Quality Meter -->
+                        <div class="w-full h-2.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden mb-3">
+                            <div id="mq135Bar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width: 28%"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400">CO₂ • Benzene • NH₃</span>
+                        <button id="simAirBtn" type="button"
+                            class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-cyan-500/15 hover:bg-cyan-500/25 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30 transition active:scale-95">
+                            Test Poor Air
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CARD 4: PIR MOTION SENSOR -->
+                <div id="motionCard" class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 shadow-sm hover:border-cyan-500/40 transition flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between gap-2 mb-3">
+                            <div class="flex items-center gap-2.5">
+                                <div id="motionIconBox" class="w-10 h-10 rounded-xl bg-indigo-500/15 text-indigo-500 flex items-center justify-center transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h3 class="text-sm font-bold text-slate-800 dark:text-slate-100">Motion Sensor</h3>
+                                    <p class="text-[11px] text-slate-500 dark:text-slate-400">PIR HC-SR501 • GPIO 19</p>
+                                </div>
+                            </div>
+
+                            <!-- Security Arm/Disarm Toggle -->
+                            <button id="armMotionBtn" type="button"
+                                class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 transition">
+                                ARMED
+                            </button>
+                        </div>
+
+                        <!-- Live Motion Status Box -->
+                        <div id="motionStatusBox" class="rounded-xl p-3 mb-3 bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between transition-colors">
+                            <div class="flex items-center gap-2.5">
+                                <span id="motionDot" class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                                <div>
+                                    <p id="motionStatusText" class="text-sm font-extrabold text-emerald-600 dark:text-emerald-400">NO MOTION</p>
+                                    <p id="motionLastTime" class="text-[11px] text-slate-500 dark:text-slate-400">Last trigger: None yet</p>
+                                </div>
+                            </div>
+                            <span id="motionCountBadge" class="text-xs font-mono font-bold px-2 py-0.5 rounded-lg bg-slate-200/70 dark:bg-slate-800 text-slate-700 dark:text-slate-300">0</span>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
+                        <span class="text-[11px] text-slate-500 dark:text-slate-400">Zone: Main Entry</span>
+                        <button id="simMotionBtn" type="button"
+                            class="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-rose-500/15 hover:bg-rose-500/25 text-rose-600 dark:text-rose-400 border border-rose-500/30 transition active:scale-95">
+                            Simulate Motion
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 2: ESP32-CAM CCTV & 20x4 CHARACTER LCD DISPLAY -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-6" aria-label="CCTV and LCD Display">
+
+            <!-- LEFT (7 cols): ESP32-CAM WEBCAM FOR CCTV -->
+            <div class="lg:col-span-7 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 shadow-sm flex flex-col">
+                <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/15 text-rose-500 flex items-center justify-center">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h2 class="text-base font-bold text-slate-900 dark:text-white">ESP32-CAM CCTV Feed</h2>
+                                <span id="cctvModeTag" class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/15 text-rose-500 border border-rose-500/30">
+                                    SIMULATED CAM
+                                </span>
+                            </div>
+                            <p id="cctvUrlLabel" class="text-xs font-mono text-slate-500 dark:text-slate-400">Stream: http://192.168.1.101:81/stream</p>
+                        </div>
+                    </div>
+
+                    <!-- Camera Resolution Selector -->
+                    <div class="flex items-center gap-2">
+                        <select id="camResSelect" aria-label="Camera resolution"
+                            class="text-xs font-semibold rounded-xl px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                            <option value="QVGA (320×240)">QVGA 320×240</option>
+                            <option value="VGA (640×480)" selected>VGA 640×480</option>
+                            <option value="HD (1280×720)">HD 1280×720</option>
+                        </select>
+                        <button id="toggleLiveStreamBtn" type="button"
+                            class="px-3 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white transition active:scale-95">
+                            Connect Real IP
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CCTV Viewport Container (16:9 Responsive Aspect Ratio) -->
+                <div id="cctvContainer" class="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-950 border border-slate-800 shadow-inner">
+                    <!-- Real ESP32-CAM MJPEG Stream Image (Hidden in Simulation Mode) -->
+                    <img id="esp32StreamImg" alt="ESP32-CAM Live Stream" class="hidden w-full h-full object-cover" />
+
+                    <!-- Simulated CCTV Live Feed Canvas (Dynamically Sized in JS) -->
+                    <canvas id="cctvCanvas" class="w-full h-full block"></canvas>
+
+                    <!-- Top-Left Camera HUD Overlay -->
+                    <div class="absolute top-3 left-3 flex items-center gap-2 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-white text-xs font-mono pointer-events-none">
+                        <span class="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse"></span>
+                        <span class="font-bold">REC</span>
+                        <span class="text-slate-300">|</span>
+                        <span>CAM-01 MAIN</span>
+                    </div>
+
+                    <!-- Top-Right Timestamp & FPS HUD -->
+                    <div class="absolute top-3 right-3 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm border border-white/10 text-cyan-300 text-[11px] font-mono pointer-events-none">
+                        <span id="cctvTimestamp">2026-11-20 12:00:00</span> • <span id="cctvFps">24 FPS</span>
+                    </div>
+
+                    <!-- Bottom-Left Stream Status / Motion Banner -->
+                    <div id="cctvMotionOverlay" class="hidden absolute bottom-3 left-3 px-3 py-1 rounded-lg bg-rose-600/90 text-white text-xs font-bold tracking-wide animate-pulse pointer-events-none">
+                        ⚠ MOTION DETECTED IN FRAME
+                    </div>
+                </div>
+
+                <!-- CCTV Action Controls -->
+                <div class="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    <button id="camFlashBtn" type="button"
+                        class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition active:scale-95">
+                        <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        <span id="camFlashText">Flash: OFF</span>
+                    </button>
+
+                    <button id="camNightBtn" type="button"
+                        class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition active:scale-95">
+                        <svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+                        </svg>
+                        <span id="camNightText">Night IR: ON</span>
+                    </button>
+
+                    <button id="camSnapshotBtn" type="button"
+                        class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition active:scale-95">
+                        <svg class="w-4 h-4 text-cyan-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span>Snapshot</span>
+                    </button>
+
+                    <button id="camPauseBtn" type="button"
+                        class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-xs font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 transition active:scale-95">
+                        <svg class="w-4 h-4 text-rose-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span id="camPauseText">Pause Feed</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- RIGHT (5 cols): 20×4 I2C LCD DISPLAY SIMULATOR & CUSTOM DATA CONTROLLER -->
+            <div class="lg:col-span-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 shadow-sm flex flex-col justify-between">
+                <div>
+                    <!-- LCD Section Header -->
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-10 h-10 rounded-xl bg-cyan-500/15 text-cyan-500 flex items-center justify-center">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 class="text-base font-bold text-slate-900 dark:text-white">20×4 LCD Display</h2>
+                                <p class="text-[11px] text-slate-500 dark:text-slate-400">I2C Addr: 0x27 • Live &amp; Custom Data</p>
+                            </div>
+                        </div>
+
+                        <!-- Backlight Controls -->
+                        <div class="flex items-center gap-1.5">
+                            <button id="lcdColorBtn" type="button" title="Switch LCD Color (Blue/Green)"
+                                class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-sky-500/15 text-sky-500 border border-sky-500/30 hover:bg-sky-500/25 transition">
+                                BLUE
+                            </button>
+                            <button id="lcdBacklightBtn" type="button"
+                                class="px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/25 transition">
+                                BL: ON
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Realistic Hardware 20x4 LCD Module Bezel -->
+                    <div class="rounded-2xl bg-slate-900 p-3.5 border-4 border-slate-700 dark:border-slate-800 shadow-xl mb-4">
+                        <!-- Top PCB Screws & Model Print -->
+                        <div class="flex items-center justify-between text-[9px] font-mono text-slate-400 mb-2 px-1">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-300/70 border border-amber-500 inline-block"></span>
+                            <span class="tracking-widest uppercase">LCD2004A • PIYUSH HOME I2C</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-300/70 border border-amber-500 inline-block"></span>
+                        </div>
+
+                        <!-- Illuminated 20x4 Character Screen -->
+                        <div id="lcdScreen"
+                            class="rounded-xl p-3 sm:p-4 font-mono text-xs sm:text-sm md:text-[15px] leading-relaxed tracking-widest transition-all duration-300 bg-sky-950 text-cyan-200 border-2 border-sky-500/50 shadow-lcd-blue overflow-x-auto">
+                            <div id="lcdRow0" class="whitespace-pre font-bold">==== PIYUSH HOME ===</div>
+                            <div id="lcdRow1" class="whitespace-pre font-bold">T:26.4C   H:54%     </div>
+                            <div id="lcdRow2" class="whitespace-pre font-bold">MQ2:142   MQ135:418 </div>
+                            <div id="lcdRow3" class="whitespace-pre font-bold">MOT:CLEAR  SW:2/5 ON</div>
+                        </div>
+
+                        <!-- Bottom Status Bar -->
+                        <div class="flex items-center justify-between text-[10px] font-mono text-slate-400 mt-2 px-1">
+                            <span id="lcdModeIndicator">MODE: AUTO LIVE DATA</span>
+                            <span>COLS: 20 × ROWS: 4</span>
+                        </div>
+                    </div>
+
+                    <!-- LCD Mode Tabs: Auto Live Sensor Data vs Custom Text -->
+                    <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-slate-100 dark:bg-slate-800 mb-3">
+                        <button id="lcdTabLive" type="button"
+                            class="py-2 px-3 rounded-lg text-xs font-bold bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400 shadow-sm transition">
+                            Live Sensor Data
+                        </button>
+                        <button id="lcdTabCustom" type="button"
+                            class="py-2 px-3 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition">
+                            Custom Data Show
+                        </button>
+                    </div>
+
+                    <!-- PANEL A: Live Data Controls -->
+                    <div id="lcdLivePanel" class="space-y-3">
+                        <p class="text-xs text-slate-600 dark:text-slate-400">
+                            Choose which real-time telemetry screen to display on the 20×4 LCD module:
+                        </p>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button type="button" data-lcd-page="auto"
+                                class="lcd-page-btn px-3 py-2 rounded-xl text-xs font-semibold bg-cyan-600 text-white border border-cyan-500 transition">
+                                Auto Cycle (4s)
+                            </button>
+                            <button type="button" data-lcd-page="overview"
+                                class="lcd-page-btn px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition">
+                                All Sensors
+                            </button>
+                            <button type="button" data-lcd-page="gas"
+                                class="lcd-page-btn px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition">
+                                Gas &amp; Air Detail
+                            </button>
+                            <button type="button" data-lcd-page="switches"
+                                class="lcd-page-btn px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition">
+                                5-Switch Status
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PANEL B: Custom 20x4 Text Input Form -->
+                    <div id="lcdCustomPanel" class="hidden space-y-2.5">
+                        <!-- 4 Rows of 20-char Inputs -->
+                        <div class="space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-mono font-bold text-slate-400 w-7">L1:</span>
+                                <input id="lcdInput0" type="text" maxlength="20" value="   PIYUSH HOME      "
+                                    placeholder="Line 1 (max 20 chars)"
+                                    class="flex-1 px-3 py-1.5 rounded-lg text-xs font-mono bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                                <span id="lcdCount0" class="text-[10px] font-mono text-slate-400 w-9 text-right">20/20</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-mono font-bold text-slate-400 w-7">L2:</span>
+                                <input id="lcdInput1" type="text" maxlength="20" value="  WELCOME GUESTS!   "
+                                    placeholder="Line 2 (max 20 chars)"
+                                    class="flex-1 px-3 py-1.5 rounded-lg text-xs font-mono bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                                <span id="lcdCount1" class="text-[10px] font-mono text-slate-400 w-9 text-right">20/20</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-mono font-bold text-slate-400 w-7">L3:</span>
+                                <input id="lcdInput2" type="text" maxlength="20" value="SMART IOT SYSTEM ON "
+                                    placeholder="Line 3 (max 20 chars)"
+                                    class="flex-1 px-3 py-1.5 rounded-lg text-xs font-mono bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                                <span id="lcdCount2" class="text-[10px] font-mono text-slate-400 w-9 text-right">20/20</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[11px] font-mono font-bold text-slate-400 w-7">L4:</span>
+                                <input id="lcdInput3" type="text" maxlength="20" value="   HAVE A NICE DAY  "
+                                    placeholder="Line 4 (max 20 chars)"
+                                    class="flex-1 px-3 py-1.5 rounded-lg text-xs font-mono bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                                <span id="lcdCount3" class="text-[10px] font-mono text-slate-400 w-9 text-right">20/20</span>
+                            </div>
+                        </div>
+
+                        <!-- Quick Presets & Actions -->
+                        <div class="flex flex-wrap items-center gap-2 pt-1">
+                            <button id="sendLcdBtn" type="button"
+                                class="flex-1 py-2 px-3 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white transition active:scale-95">
+                                Send to 20×4 LCD
+                            </button>
+                            <button id="centerLcdBtn" type="button"
+                                class="py-2 px-3 rounded-xl text-xs font-semibold bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition">
+                                Center
+                            </button>
+                            <button id="clearLcdBtn" type="button"
+                                class="py-2 px-3 rounded-xl text-xs font-semibold bg-rose-500/15 hover:bg-rose-500/25 text-rose-500 border border-rose-500/30 transition">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: 5-CHANNEL SMART RELAY SWITCH PANEL -->
+        <section class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 shadow-sm" aria-label="5 Smart Switches">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-violet-500/15 text-violet-500 flex items-center justify-center">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 class="text-base font-bold text-slate-900 dark:text-white">5-Channel Appliance Switches</h2>
+                            <span id="activeSwitchCount" class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-violet-500/15 text-violet-500 border border-violet-500/30">
+                                2 / 5 ON
+                            </span>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">ESP32 5-Relay Module • Tap any card to toggle or click edit to rename</p>
+                    </div>
+                </div>
+
+                <!-- Master Switch Controls -->
+                <div class="flex items-center gap-2">
+                    <button id="allSwitchesOnBtn" type="button"
+                        class="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition active:scale-95">
+                        All ON
+                    </button>
+                    <button id="allSwitchesOffBtn" type="button"
+                        class="px-3.5 py-2 rounded-xl text-xs font-bold bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition active:scale-95">
+                        All OFF
+                    </button>
+                </div>
+            </div>
+
+            <!-- 5 Switch Cards Container (Populated & Managed Dynamically in JS) -->
+            <div id="switchesGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <!-- Rendered by JavaScript -->
+            </div>
+        </section>
+
+        <!-- SECTION 4: RECENT SYSTEM ACTIVITY LOG -->
+        <section class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 shadow-sm" aria-label="Activity Log">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    PIYUSH HOME Event Log
+                </h2>
+                <button id="clearLogBtn" type="button"
+                    class="text-xs font-semibold text-slate-500 hover:text-rose-500 transition">
+                    Clear Log
+                </button>
+            </div>
+            <div id="eventLogList" class="space-y-1.5 max-h-40 overflow-y-auto pr-1 text-xs font-mono">
+                <!-- Events appended dynamically -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== FOOTER ==================== -->
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-slate-500 dark:text-slate-500 border-t border-slate-200 dark:border-slate-900 mt-4">
+        <p class="font-semibold text-slate-600 dark:text-slate-400">PIYUSH HOME • Smart IoT Automation System</p>
+        <p class="mt-1">ESP32 + DHT22 + MQ-2 + MQ-135 + PIR Motion + 5-Channel Relay + ESP32-CAM + 20×4 I2C LCD</p>
+    </footer>
+
+    <!-- ==================== ESP32 CONFIGURATION MODAL ==================== -->
+    <div id="settingsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <h3 class="text-base font-bold text-slate-900 dark:text-white">ESP32 Hardware Connection Setup</h3>
+                <button id="closeSettingsBtn" type="button" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <!-- Mode Toggle -->
+                <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-100 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
+                    <div>
+                        <p class="text-sm font-bold text-slate-800 dark:text-slate-100">Use Real ESP32 Hardware</p>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">Turn OFF for built-in live sensor simulation</p>
+                    </div>
+                    <button id="hardwareModeToggle" type="button" role="switch" aria-checked="false"
+                        class="relative inline-flex h-6 w-11 items-center rounded-full bg-slate-400 dark:bg-slate-600 transition-colors">
+                        <span id="hardwareModeKnob" class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1"></span>
+                    </button>
+                </div>
+
+                <!-- Main ESP32 IP -->
+                <div>
+                    <label for="esp32IpInput" class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
+                        Main ESP32 Controller Base URL
+                    </label>
+                    <input id="esp32IpInput" type="text" value="http://192.168.1.100"
+                        class="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                    <p class="mt-1 text-[11px] text-slate-500">Endpoints used: <code class="font-mono text-cyan-500">/api/sensors</code>, <code class="font-mono text-cyan-500">/api/switch</code>, <code class="font-mono text-cyan-500">/api/lcd</code></p>
+                </div>
+
+                <!-- ESP32-CAM Stream URL -->
+                <div>
+                    <label for="esp32CamUrlInput" class="block text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-1.5">
+                        ESP32-CAM MJPEG Stream URL
+                    </label>
+                    <input id="esp32CamUrlInput" type="text" value="http://192.168.1.101:81/stream"
+                        class="w-full px-3.5 py-2.5 rounded-xl text-sm font-mono bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2">
+                    <button id="cancelSettingsBtn" type="button"
+                        class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700 transition">
+                        Cancel
+                    </button>
+                    <button id="saveSettingsBtn" type="button"
+                        class="px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white transition">
+                        Save &amp; Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== RENAME SWITCH MODAL (No window.prompt) ==================== -->
+    <div id="renameModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="w-full max-w-sm rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl p-6 space-y-4">
+            <h3 class="text-base font-bold text-slate-900 dark:text-white">Rename Smart Switch</h3>
+            <input id="renameSwitchInput" type="text" maxlength="20"
+                class="w-full px-3.5 py-2.5 rounded-xl text-sm bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                placeholder="Enter appliance name">
+            <div class="flex justify-end gap-2">
+                <button id="cancelRenameBtn" type="button"
+                    class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    Cancel
+                </button>
+                <button id="saveRenameBtn" type="button"
+                    class="px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white">
+                    Save Name
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== TOAST NOTIFICATION CONTAINER ==================== -->
+    <div id="toastContainer" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 max-w-xs w-full pointer-events-none"></div>
+
+    <!-- ==================== APPLICATION LOGIC ==================== -->
+    <script>
+        (function () {
+            'use strict';
+
+            /* ----------------------------------------------------------------
+               1. CENTRAL APPLICATION STATE
+               ---------------------------------------------------------------- */
+            const state = {
+                useHardware: false,
+                esp32BaseUrl: 'http://192.168.1.100',
+                esp32CamUrl: 'http://192.168.1.101:81/stream',
+                useRealStream: false,
+
+                // Environmental & Gas Sensors
+                tempC: 26.4,
+                humidity: 54,
+                tempUnit: 'C', // 'C' or 'F'
+                tempHistory: [25.8, 26.0, 26.1, 26.3, 26.2, 26.5, 26.4, 26.6, 26.3, 26.4],
+
+                mq2Ppm: 142,       // Combustible gas / smoke (Safe < 300, Warn 300-400, Danger > 400)
+                mq135Ppm: 418,     // Air quality CO2/VOC (Good < 600, Moderate 600-1000, Poor > 1000)
+                gasSpikeTimer: 0,
+                airSpikeTimer: 0,
+
+                // PIR Motion Sensor
+                motionArmed: true,
+                motionDetected: false,
+                motionCount: 0,
+                motionLastTime: 'None yet',
+                motionResetTimeout: null,
+
+                // 5-Channel Relay Switches
+                switches: [
+                    { id: 1, name: 'Living Light', gpio: 'GPIO 26', state: true,  watts: 18,  icon: 'bulb' },
+                    { id: 2, name: 'Ceiling Fan',  gpio: 'GPIO 27', state: true,  watts: 65,  icon: 'fan' },
+                    { id: 3, name: 'Bedroom AC',   gpio: 'GPIO 14', state: false, watts: 1200,icon: 'ac' },
+                    { id: 4, name: 'Porch Light',  gpio: 'GPIO 12', state: false, watts: 12,  icon: 'porch' },
+                    { id: 5, name: 'Water Pump',   gpio: 'GPIO 13', state: false, watts: 750, icon: 'pump' }
+                ],
+                renamingSwitchId: null,
+
+                // 20x4 LCD Display State
+                lcdMode: 'live',        // 'live' | 'custom'
+                lcdLivePage: 'auto',    // 'auto' | 'overview' | 'gas' | 'switches'
+                lcdAutoIndex: 0,
+                lcdBacklightOn: true,
+                lcdColor: 'blue',       // 'blue' | 'green'
+                lcdCustomLines: [
+                    '   PIYUSH HOME      ',
+                    '  WELCOME GUESTS!   ',
+                    'SMART IOT SYSTEM ON ',
+                    '   HAVE A NICE DAY  '
+                ],
+
+                // ESP32-CAM CCTV State
+                camFlashOn: false,
+                camNightVision: true,
+                camPaused: false,
+                camFrameCount: 0,
+                camPersonX: -60,
+                camPersonActive: false
+            };
+
+            /* ----------------------------------------------------------------
+               2. DOM ELEMENT REFERENCES
+               ---------------------------------------------------------------- */
+            const el = {
+                liveTime: document.getElementById('liveTime'),
+                liveDate: document.getElementById('liveDate'),
+                connectionBadge: document.getElementById('connectionBadge'),
+                lastUpdatedLabel: document.getElementById('lastUpdatedLabel'),
+                themeToggleBtn: document.getElementById('themeToggleBtn'),
+
+                // Global Alert Banner
+                globalAlertBanner: document.getElementById('globalAlertBanner'),
+                globalAlertText: document.getElementById('globalAlertText'),
+                dismissAlertBtn: document.getElementById('dismissAlertBtn'),
+
+                // Temp & Humidity
+                tempValue: document.getElementById('tempValue'),
+                tempUnitDisplay: document.getElementById('tempUnitDisplay'),
+                tempUnitToggle: document.getElementById('tempUnitToggle'),
+                humValue: document.getElementById('humValue'),
+                comfortStatus: document.getElementById('comfortStatus'),
+                heatIndexVal: document.getElementById('heatIndexVal'),
+                tempSparkPath: document.getElementById('tempSparkPath'),
+
+                // MQ-2
+                mq2Card: document.getElementById('mq2Card'),
+                mq2Value: document.getElementById('mq2Value'),
+                mq2Badge: document.getElementById('mq2Badge'),
+                mq2Bar: document.getElementById('mq2Bar'),
+                simGasBtn: document.getElementById('simGasBtn'),
+
+                // MQ-135
+                mq135Card: document.getElementById('mq135Card'),
+                mq135Value: document.getElementById('mq135Value'),
+                mq135Badge: document.getElementById('mq135Badge'),
+                mq135Bar: document.getElementById('mq135Bar'),
+                aqiScore: document.getElementById('aqiScore'),
+                simAirBtn: document.getElementById('simAirBtn'),
+
+                // Motion Sensor
+                motionIconBox: document.getElementById('motionIconBox'),
+                motionStatusBox: document.getElementById('motionStatusBox'),
+                motionDot: document.getElementById('motionDot'),
+                motionStatusText: document.getElementById('motionStatusText'),
+                motionLastTime: document.getElementById('motionLastTime'),
+                motionCountBadge: document.getElementById('motionCountBadge'),
+                armMotionBtn: document.getElementById('armMotionBtn'),
+                simMotionBtn: document.getElementById('simMotionBtn'),
+
+                // ESP32-CAM CCTV
+                cctvContainer: document.getElementById('cctvContainer'),
+                cctvCanvas: document.getElementById('cctvCanvas'),
+                esp32StreamImg: document.getElementById('esp32StreamImg'),
+                cctvModeTag: document.getElementById('cctvModeTag'),
+                cctvUrlLabel: document.getElementById('cctvUrlLabel'),
+                cctvTimestamp: document.getElementById('cctvTimestamp'),
+                cctvFps: document.getElementById('cctvFps'),
+                cctvMotionOverlay: document.getElementById('cctvMotionOverlay'),
+                camResSelect: document.getElementById('camResSelect'),
+                toggleLiveStreamBtn: document.getElementById('toggleLiveStreamBtn'),
+                camFlashBtn: document.getElementById('camFlashBtn'),
+                camFlashText: document.getElementById('camFlashText'),
+                camNightBtn: document.getElementById('camNightBtn'),
+                camNightText: document.getElementById('camNightText'),
+                camSnapshotBtn: document.getElementById('camSnapshotBtn'),
+                camPauseBtn: document.getElementById('camPauseBtn'),
+                camPauseText: document.getElementById('camPauseText'),
+
+                // 20x4 LCD
+                lcdScreen: document.getElementById('lcdScreen'),
+                lcdRows: [
+                    document.getElementById('lcdRow0'),
+                    document.getElementById('lcdRow1'),
+                    document.getElementById('lcdRow2'),
+                    document.getElementById('lcdRow3')
+                ],
+                lcdInputs: [
+                    document.getElementById('lcdInput0'),
+                    document.getElementById('lcdInput1'),
+                    document.getElementById('lcdInput2'),
+                    document.getElementById('lcdInput3')
+                ],
+                lcdCounts: [
+                    document.getElementById('lcdCount0'),
+                    document.getElementById('lcdCount1'),
+                    document.getElementById('lcdCount2'),
+                    document.getElementById('lcdCount3')
+                ],
+                lcdModeIndicator: document.getElementById('lcdModeIndicator'),
+                lcdColorBtn: document.getElementById('lcdColorBtn'),
+                lcdBacklightBtn: document.getElementById('lcdBacklightBtn'),
+                lcdTabLive: document.getElementById('lcdTabLive'),
+                lcdTabCustom: document.getElementById('lcdTabCustom'),
+                lcdLivePanel: document.getElementById('lcdLivePanel'),
+                lcdCustomPanel: document.getElementById('lcdCustomPanel'),
+                sendLcdBtn: document.getElementById('sendLcdBtn'),
+                centerLcdBtn: document.getElementById('centerLcdBtn'),
+                clearLcdBtn: document.getElementById('clearLcdBtn'),
+
+                // Switches
+                switchesGrid: document.getElementById('switchesGrid'),
+                activeSwitchCount: document.getElementById('activeSwitchCount'),
+                allSwitchesOnBtn: document.getElementById('allSwitchesOnBtn'),
+                allSwitchesOffBtn: document.getElementById('allSwitchesOffBtn'),
+
+                // Event Log
+                eventLogList: document.getElementById('eventLogList'),
+                clearLogBtn: document.getElementById('clearLogBtn'),
+
+                // Modals
+                settingsModal: document.getElementById('settingsModal'),
+                openSettingsBtn: document.getElementById('openSettingsBtn'),
+                closeSettingsBtn: document.getElementById('closeSettingsBtn'),
+                cancelSettingsBtn: document.getElementById('cancelSettingsBtn'),
+                saveSettingsBtn: document.getElementById('saveSettingsBtn'),
+                hardwareModeToggle: document.getElementById('hardwareModeToggle'),
+                hardwareModeKnob: document.getElementById('hardwareModeKnob'),
+                esp32IpInput: document.getElementById('esp32IpInput'),
+                esp32CamUrlInput: document.getElementById('esp32CamUrlInput'),
+
+                renameModal: document.getElementById('renameModal'),
+                renameSwitchInput: document.getElementById('renameSwitchInput'),
+                cancelRenameBtn: document.getElementById('cancelRenameBtn'),
+                saveRenameBtn: document.getElementById('saveRenameBtn'),
+
+                toastContainer: document.getElementById('toastContainer')
+            };
+
+            /* ----------------------------------------------------------------
+               3. UTILITY FUNCTIONS (TOASTS, LOGGING, FORMATTING)
+               ---------------------------------------------------------------- */
+
+            /** Show a sleek non-blocking toast notification (replaces alert) */
+            function showToast(message, type = 'info') {
+                const colors = {
+                    info: 'bg-slate-900 dark:bg-slate-800 text-white border-cyan-500/50',
+                    success: 'bg-emerald-950 text-emerald-100 border-emerald-500/50',
+                    warn: 'bg-amber-950 text-amber-100 border-amber-500/50',
+                    error: 'bg-rose-950 text-rose-100 border-rose-500/50'
+                };
+                const toast = document.createElement('div');
+                toast.className = `pointer-events-auto px-4 py-3 rounded-xl border text-xs font-semibold shadow-xl flex items-center justify-between gap-2 transition-all duration-300 ${colors[type] || colors.info}`;
+                toast.textContent = message;
+                el.toastContainer.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-y-2');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            }
+
+            /** Append a timestamped entry to the System Event Log */
+            function addEventLog(message, level = 'info') {
+                const now = new Date();
+                const timeStr = now.toTimeString().split(' ')[0];
+                const colorMap = {
+                    info: 'text-cyan-600 dark:text-cyan-400',
+                    success: 'text-emerald-600 dark:text-emerald-400',
+                    warn: 'text-amber-600 dark:text-amber-400',
+                    danger: 'text-rose-600 dark:text-rose-400'
+                };
+                const row = document.createElement('div');
+                row.className = 'flex items-start gap-2 py-1 border-b border-slate-100 dark:border-slate-800/70';
+                row.innerHTML = `<span class="text-slate-400 shrink-0">[${timeStr}]</span><span class="${colorMap[level] || colorMap.info}">${escapeHtml(message)}</span>`;
+                el.eventLogList.prepend(row);
+
+                // Keep last 40 logs
+                while (el.eventLogList.children.length > 40) {
+                    el.eventLogList.removeChild(el.eventLogList.lastChild);
+                }
+            }
+
+            /** Escape HTML characters safely */
+            function escapeHtml(str) {
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;');
+            }
+
+            /** Strictly format any string to exactly 20 LCD characters */
+            function padLcd20(text) {
+                const clean = String(text || '').slice(0, 20);
+                return clean.padEnd(20, ' ');
+            }
+
+            /** Center text inside a 20-character LCD row */
+            function centerLcd20(text) {
+                const trimmed = String(text || '').trim().slice(0, 20);
+                const leftPad = Math.floor((20 - trimmed.length) / 2);
+                return (' '.repeat(leftPad) + trimmed).padEnd(20, ' ');
+            }
+
+            /** Trigger top alert banner */
+            function showGlobalAlert(msg) {
+                el.globalAlertText.textContent = msg;
+                el.globalAlertBanner.classList.remove('hidden');
+            }
+
+            /* ----------------------------------------------------------------
+               4. SENSOR RENDERING (TEMP/HUM, MQ-2, MQ-135, PIR MOTION)
+               ---------------------------------------------------------------- */
+
+            function renderSensors() {
+                // --- Temperature & Humidity ---
+                const displayTemp = state.tempUnit === 'C'
+                    ? state.tempC
+                    : (state.tempC * 9 / 5) + 32;
+                const heatIndexC = state.tempC + (0.05 * state.humidity - 2.0);
+                const displayHI = state.tempUnit === 'C'
+                    ? heatIndexC
+                    : (heatIndexC * 9 / 5) + 32;
+
+                el.tempValue.textContent = displayTemp.toFixed(1);
+                el.tempUnitDisplay.textContent = `°${state.tempUnit}`;
+                el.tempUnitToggle.textContent = `°${state.tempUnit}`;
+                el.humValue.textContent = Math.round(state.humidity);
+                el.heatIndexVal.textContent = `${displayHI.toFixed(1)}°${state.tempUnit}`;
+
+                // Comfort Evaluation
+                if (state.tempC >= 20 && state.tempC <= 28 && state.humidity >= 35 && state.humidity <= 65) {
+                    el.comfortStatus.textContent = 'Optimal';
+                    el.comfortStatus.className = 'text-emerald-500';
+                } else if (state.tempC > 32 || state.humidity > 75) {
+                    el.comfortStatus.textContent = 'Humid / Warm';
+                    el.comfortStatus.className = 'text-amber-500';
+                } else {
+                    el.comfortStatus.textContent = 'Moderate';
+                    el.comfortStatus.className = 'text-sky-500';
+                }
+
+                // Update Temperature Sparkline SVG
+                const minT = Math.min(...state.tempHistory) - 0.5;
+                const maxT = Math.max(...state.tempHistory) + 0.5;
+                const range = Math.max(maxT - minT, 1);
+                const pts = state.tempHistory.map((val, i) => {
+                    const x = (i / (state.tempHistory.length - 1)) * 200;
+                    const y = 28 - ((val - minT) / range) * 24;
+                    return `${x.toFixed(1)},${y.toFixed(1)}`;
+                }).join(' ');
+                el.tempSparkPath.setAttribute('points', pts);
+
+                // --- MQ-2 Gas & Smoke Sensor ---
+                const mq2 = Math.round(state.mq2Ppm);
+                el.mq2Value.textContent = mq2;
+                const mq2Pct = Math.min(100, Math.max(5, (mq2 / 800) * 100));
+                el.mq2Bar.style.width = `${mq2Pct}%`;
+
+                if (mq2 >= 400) {
+                    el.mq2Badge.textContent = 'DANGER!';
+                    el.mq2Badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-500 border border-rose-500/40 animate-pulse';
+                    el.mq2Bar.className = 'h-full rounded-full bg-rose-500 transition-all duration-500';
+                    showGlobalAlert(`MQ-2 GAS/SMOKE ALERT: ${mq2} PPM detected in PIYUSH HOME!`);
+                } else if (mq2 >= 280) {
+                    el.mq2Badge.textContent = 'WARNING';
+                    el.mq2Badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-500 border border-amber-500/40';
+                    el.mq2Bar.className = 'h-full rounded-full bg-amber-500 transition-all duration-500';
+                } else {
+                    el.mq2Badge.textContent = 'SAFE';
+                    el.mq2Badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30';
+                    el.mq2Bar.className = 'h-full rounded-full bg-emerald-500 transition-all duration-500';
+                }
+
+                // --- MQ-135 Air Quality Sensor ---
+                const mq135 = Math.round(state.mq135Ppm);
+                const aqi = Math.min(500, Math.max(10, Math.round((mq135 - 250) * 0.25)));
+                el.mq135Value.textContent = mq135;
+                el.aqiScore.textContent = aqi;
+                const mq135Pct = Math.min(100, Math.max(8, (mq135 / 1500) * 100));
+                el.mq135Bar.style.width = `${mq135Pct}%`;
+
+                if (mq135 >= 1000) {
+                    el.mq135Badge.textContent = 'POOR AIR';
+                    el.mq135Badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-500 border border-rose-500/40';
+                    el.mq135Bar.className = 'h-full rounded-full bg-rose-500 transition-all duration-500';
+                    el.aqiScore.className = 'font-mono text-rose-500';
+                } else if (mq135 >= 650) {
+                    el.mq135Badge.textContent = 'MODERATE';
+                    el.mq135Badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-500 border border-amber-500/40';
+                    el.mq135Bar.className = 'h-full rounded-full bg-amber-500 transition-all duration-500';
+                    el.aqiScore.className = 'font-mono text-amber-500';
+                } else {
+                    el.mq135Badge.textContent = 'FRESH';
+                    el.mq135Badge.className = 'px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30';
+                    el.mq135Bar.className = 'h-full rounded-full bg-emerald-500 transition-all duration-500';
+                    el.aqiScore.className = 'font-mono text-emerald-500';
+                }
+
+                // Update last refresh label
+                el.lastUpdatedLabel.textContent = `Updated: ${new Date().toTimeString().split(' ')[0]}`;
+
+                // Keep 20x4 LCD synced when in Live Mode
+                if (state.lcdMode === 'live') {
+                    renderLcdDisplay();
+                }
+            }
+
+            /** Render PIR Motion Sensor UI */
+            function renderMotionSensor() {
+                el.motionCountBadge.textContent = state.motionCount;
+                el.motionLastTime.textContent = `Last trigger: ${state.motionLastTime}`;
+
+                if (state.motionArmed) {
+                    el.armMotionBtn.textContent = 'ARMED';
+                    el.armMotionBtn.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/30 transition';
+                } else {
+                    el.armMotionBtn.textContent = 'DISARMED';
+                    el.armMotionBtn.className = 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-500 border border-slate-300 dark:border-slate-700 transition';
+                }
+
+                if (state.motionDetected) {
+                    el.motionStatusBox.className = 'rounded-xl p-3 mb-3 bg-rose-500/15 border border-rose-500/40 flex items-center justify-between transition-colors';
+                    el.motionDot.className = 'w-3 h-3 rounded-full bg-rose-500 animate-ping';
+                    el.motionStatusText.textContent = 'MOTION DETECTED!';
+                    el.motionStatusText.className = 'text-sm font-extrabold text-rose-500';
+                    el.motionIconBox.className = 'w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center animate-pulse';
+                    el.cctvMotionOverlay.classList.remove('hidden');
+                } else {
+                    el.motionStatusBox.className = 'rounded-xl p-3 mb-3 bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between transition-colors';
+                    el.motionDot.className = 'w-3 h-3 rounded-full bg-emerald-500';
+                    el.motionStatusText.textContent = 'NO MOTION';
+                    el.motionStatusText.className = 'text-sm font-extrabold text-emerald-600 dark:text-emerald-400';
+                    el.motionIconBox.className = 'w-10 h-10 rounded-xl bg-indigo-500/15 text-indigo-500 flex items-center justify-center';
+                    el.cctvMotionOverlay.classList.add('hidden');
+                }
+
+                if (state.lcdMode === 'live') {
+                    renderLcdDisplay();
+                }
+            }
+
+            /** Trigger a motion detection event (from simulation or ESP32) */
+            function triggerMotionEvent() {
+                state.motionDetected = true;
+                state.motionCount += 1;
+                state.motionLastTime = new Date().toTimeString().split(' ')[0];
+                state.camPersonActive = true;
+                state.camPersonX = -40;
+
+                renderMotionSensor();
+                addEventLog(`PIR Motion Sensor triggered at Main Entry (#${state.motionCount})`, 'danger');
+
+                if (state.motionArmed) {
+                    showGlobalAlert(`MOTION DETECTED at Main Entry (${state.motionLastTime}) — Check ESP32-CAM!`);
+                    showToast('Motion detected! CCTV recording highlight.', 'warn');
+                }
+
+                // Auto clear motion status after 6 seconds
+                if (state.motionResetTimeout) clearTimeout(state.motionResetTimeout);
+                state.motionResetTimeout = setTimeout(() => {
+                    state.motionDetected = false;
+                    renderMotionSensor();
+                }, 6000);
+            }
+
+            /* ----------------------------------------------------------------
+               5. 20×4 CHARACTER LCD DISPLAY ENGINE
+               ---------------------------------------------------------------- */
+
+            /** Generate the 4x20 lines for live telemetry pages */
+            function getLiveLcdLines() {
+                const activeCount = state.switches.filter(s => s.state).length;
+                const tVal = state.tempUnit === 'C'
+                    ? `${state.tempC.toFixed(1)}C`
+                    : `${((state.tempC * 9 / 5) + 32).toFixed(1)}F`;
+                const hVal = `${Math.round(state.humidity)}%`;
+                const motStr = state.motionDetected ? 'DETECT!' : 'CLEAR  ';
+
+                let page = state.lcdLivePage;
+                if (page === 'auto') {
+                    const pages = ['overview', 'gas', 'switches'];
+                    page = pages[state.lcdAutoIndex % pages.length];
+                }
+
+                if (page === 'gas') {
+                    const mq2Stat = state.mq2Ppm >= 400 ? 'DANGER' : (state.mq2Ppm >= 280 ? 'WARN  ' : 'SAFE  ');
+                    const airStat = state.mq135Ppm >= 1000 ? 'POOR ' : (state.mq135Ppm >= 650 ? 'MOD  ' : 'FRESH');
+                    return [
+                        centerLcd20('== AIR & GAS DATA =='),
+                        padLcd20(`MQ-2  :${String(Math.round(state.mq2Ppm)).padStart(4)}ppm ${mq2Stat}`),
+                        padLcd20(`MQ-135:${String(Math.round(state.mq135Ppm)).padStart(4)}ppm ${airStat}`),
+                        padLcd20(`MOTION: ${motStr}`)
+                    ];
+                }
+
+                if (page === 'switches') {
+                    const s = state.switches;
+                    const st = (sw) => sw.state ? 'ON ' : 'OFF';
+                    return [
+                        centerLcd20('== 5 SWITCH STATE =='),
+                        padLcd20(`S1:${st(s[0])} S2:${st(s[1])} S3:${st(s[2])}`),
+                        padLcd20(`S4:${st(s[3])} S5:${st(s[4])}`),
+                        padLcd20(`ACTIVE LOADS: ${activeCount}/5 ON`)
+                    ];
+                }
+
+                // Default 'overview' page
+                return [
+                    centerLcd20('==== PIYUSH HOME ==='),
+                    padLcd20(`T:${tVal.padEnd(6)}  H:${hVal}`),
+                    padLcd20(`MQ2:${String(Math.round(state.mq2Ppm)).padEnd(4)} MQ135:${Math.round(state.mq135Ppm)}`),
+                    padLcd20(`MOT:${motStr} SW:${activeCount}/5`)
+                ];
+            }
+
+            /** Render the 20x4 LCD display content & backlight style */
+            function renderLcdDisplay() {
+                const lines = state.lcdMode === 'live'
+                    ? getLiveLcdLines()
+                    : state.lcdCustomLines.map(padLcd20);
+
+                lines.forEach((line, idx) => {
+                    el.lcdRows[idx].textContent = line;
+                });
+
+                // Backlight & Color styling
+                if (!state.lcdBacklightOn) {
+                    el.lcdScreen.className = 'rounded-xl p-3 sm:p-4 font-mono text-xs sm:text-sm md:text-[15px] leading-relaxed tracking-widest transition-all duration-300 bg-slate-950 text-slate-700 border-2 border-slate-800 overflow-x-auto';
+                    el.lcdBacklightBtn.textContent = 'BL: OFF';
+                    el.lcdBacklightBtn.className = 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-slate-200 dark:bg-slate-800 text-slate-500 border border-slate-300 dark:border-slate-700 transition';
+                } else if (state.lcdColor === 'blue') {
+                    el.lcdScreen.className = 'rounded-xl p-3 sm:p-4 font-mono text-xs sm:text-sm md:text-[15px] leading-relaxed tracking-widest transition-all duration-300 bg-sky-950 text-cyan-200 border-2 border-sky-500/50 shadow-lcd-blue overflow-x-auto';
+                    el.lcdColorBtn.textContent = 'BLUE';
+                    el.lcdColorBtn.className = 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-sky-500/15 text-sky-500 border border-sky-500/30 hover:bg-sky-500/25 transition';
+                    el.lcdBacklightBtn.textContent = 'BL: ON';
+                    el.lcdBacklightBtn.className = 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/25 transition';
+                } else {
+                    el.lcdScreen.className = 'rounded-xl p-3 sm:p-4 font-mono text-xs sm:text-sm md:text-[15px] leading-relaxed tracking-widest transition-all duration-300 bg-lime-950 text-lime-300 border-2 border-lime-500/50 shadow-lcd-green overflow-x-auto';
+                    el.lcdColorBtn.textContent = 'GREEN';
+                    el.lcdColorBtn.className = 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-lime-500/15 text-lime-500 border border-lime-500/30 hover:bg-lime-500/25 transition';
+                    el.lcdBacklightBtn.textContent = 'BL: ON';
+                    el.lcdBacklightBtn.className = 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 hover:bg-emerald-500/25 transition';
+                }
+
+                el.lcdModeIndicator.textContent = state.lcdMode === 'live'
+                    ? `MODE: LIVE (${state.lcdLivePage.toUpperCase()})`
+                    : 'MODE: CUSTOM TEXT';
+            }
+
+            /** Send LCD text to ESP32 if hardware mode is enabled */
+            async function pushLcdToHardware(lines) {
+                if (!state.useHardware) return;
+                try {
+                    await fetch(`${state.esp32BaseUrl}/api/lcd`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ lines })
+                    });
+                } catch (err) {
+                    console.warn('ESP32 LCD push failed:', err);
+                }
+            }
+
+            /* ----------------------------------------------------------------
+               6. 5-CHANNEL SMART RELAY SWITCHES
+               ---------------------------------------------------------------- */
+
+            function getSwitchSvgIcon(type) {
+                switch (type) {
+                    case 'fan':
+                        return `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 12c0-3 2.5-5 5-5s4 1.5 4 3.5-2 3.5-4.5 3.5H12zm0 0c0 3-2.5 5-5 5s-4-1.5-4-3.5S5 10 7.5 10H12zm0 0c-3 0-5-2.5-5-5s1.5-4 3.5-4S14 5 14 7.5V12zm0 0c3 0 5 2.5 5 5s-1.5 4-3.5 4S10 19 10 16.5V12z"/></svg>`;
+                    case 'ac':
+                        return `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16a2 2 0 012 2v5a2 2 0 01-2 2H4a2 2 0 01-2-2V8a2 2 0 012-2zm3 9v3m5-3v4m5-4v3"/></svg>`;
+                    case 'porch':
+                        return `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>`;
+                    case 'pump':
+                        return `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>`;
+                    default:
+                        return `<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>`;
+                }
+            }
+
+            function renderSwitches() {
+                const activeCount = state.switches.filter(s => s.state).length;
+                el.activeSwitchCount.textContent = `${activeCount} / 5 ON`;
+                el.switchesGrid.innerHTML = '';
+
+                state.switches.forEach((sw) => {
+                    const card = document.createElement('div');
+                    card.className = sw.state
+                        ? 'rounded-2xl p-4 border-2 border-cyan-500/60 bg-gradient-to-br from-cyan-500/10 to-blue-500/5 dark:from-cyan-500/15 dark:to-slate-900 shadow-md shadow-cyan-500/10 transition flex flex-col justify-between gap-4'
+                        : 'rounded-2xl p-4 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40 hover:border-slate-300 dark:hover:border-slate-700 transition flex flex-col justify-between gap-4';
+
+                    card.innerHTML = `
+                        <div class="flex items-start justify-between gap-2">
+                            <div class="w-10 h-10 rounded-xl flex items-center justify-center transition-colors ${sw.state ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/30' : 'bg-slate-200 dark:bg-slate-800 text-slate-500'}">
+                                ${getSwitchSvgIcon(sw.icon)}
+                            </div>
+                            <button type="button" data-rename-id="${sw.id}" title="Rename switch"
+                                class="p-1.5 rounded-lg text-slate-400 hover:text-cyan-500 hover:bg-slate-200/70 dark:hover:bg-slate-700 transition">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div>
+                            <p class="text-sm font-bold text-slate-900 dark:text-white truncate">${escapeHtml(sw.name)}</p>
+                            <p class="text-[11px] font-mono text-slate-500 dark:text-slate-400">SW-${sw.id} • ${sw.gpio}</p>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-200/70 dark:border-slate-700/50">
+                            <span class="text-xs font-extrabold ${sw.state ? 'text-cyan-600 dark:text-cyan-400' : 'text-slate-400'}">
+                                ${sw.state ? 'ON' : 'OFF'}
+                            </span>
+                            <button type="button" role="switch" aria-checked="${sw.state}" data-toggle-id="${sw.id}"
+                                class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-cyan-500 ${sw.state ? 'bg-cyan-500' : 'bg-slate-300 dark:bg-slate-700'}">
+                                <span class="inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${sw.state ? 'translate-x-6' : 'translate-x-1'}"></span>
+                            </button>
+                        </div>
+                    `;
+
+                    el.switchesGrid.appendChild(card);
+                });
+
+                // Attach event listeners to toggles & rename buttons
+                el.switchesGrid.querySelectorAll('[data-toggle-id]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = Number(btn.getAttribute('data-toggle-id'));
+                        toggleSwitch(id);
+                    });
+                });
+
+                el.switchesGrid.querySelectorAll('[data-rename-id]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = Number(btn.getAttribute('data-rename-id'));
+                        openRenameModal(id);
+                    });
+                });
+
+                if (state.lcdMode === 'live') {
+                    renderLcdDisplay();
+                }
+            }
+
+            async function toggleSwitch(id, forcedState = null) {
+                const sw = state.switches.find(s => s.id === id);
+                if (!sw) return;
+
+                sw.state = forcedState !== null ? forcedState : !sw.state;
+                renderSwitches();
+                addEventLog(`Switch ${sw.id} (${sw.name}) turned ${sw.state ? 'ON' : 'OFF'}`, sw.state ? 'success' : 'info');
+
+                if (state.useHardware) {
+                    try {
+                        await fetch(`${state.esp32BaseUrl}/api/switch?id=${sw.id}&state=${sw.state ? 1 : 0}`);
+                    } catch (err) {
+                        showToast(`ESP32 unreachable for ${sw.name} (updated locally)`, 'warn');
+                    }
+                }
+            }
+
+            /* ----------------------------------------------------------------
+               7. ESP32-CAM CCTV CANVAS SIMULATOR & REAL STREAM HANDLER
+               ---------------------------------------------------------------- */
+
+            const ctx = el.cctvCanvas.getContext('2d');
+
+            /** Resize canvas dynamically to match responsive 16:9 container */
+            function resizeCctvCanvas() {
+                const rect = el.cctvContainer.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) {
+                    el.cctvCanvas.width = Math.floor(rect.width);
+                    el.cctvCanvas.height = Math.floor(rect.height);
+                    drawCctvFrame();
+                }
+            }
+
+            /** Draw a realistic simulated ESP32-CAM CCTV surveillance frame */
+            function drawCctvFrame() {
+                const w = el.cctvCanvas.width;
+                const h = el.cctvCanvas.height;
+                if (!w || !h || !ctx) return;
+
+                // Base Room Background (Night Vision Greenish-Dark vs Daylight Slate)
+                const night = state.camNightVision;
+                const flash = state.camFlashOn;
+
+                const grad = ctx.createRadialGradient(w * 0.5, h * 0.45, 20, w * 0.5, h * 0.5, w * 0.7);
+                if (flash) {
+                    grad.addColorStop(0, night ? '#365314' : '#64748b');
+                    grad.addColorStop(1, night ? '#0a190a' : '#1e293b');
+                } else {
+                    grad.addColorStop(0, night ? '#14291a' : '#263345');
+                    grad.addColorStop(1, night ? '#050c07' : '#0f172a');
+                }
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, w, h);
+
+                // Perspective Architectural Room Lines (Floor, Walls, Doorway, Window)
+                ctx.strokeStyle = night ? 'rgba(74, 222, 128, 0.22)' : 'rgba(148, 163, 184, 0.25)';
+                ctx.lineWidth = 1.5;
+
+                // Back wall rectangle
+                const bw = w * 0.54;
+                const bh = h * 0.50;
+                const bx = (w - bw) / 2;
+                const by = h * 0.18;
+                ctx.strokeRect(bx, by, bw, bh);
+
+                // Corner perspective rays
+                ctx.beginPath();
+                ctx.moveTo(0, 0); ctx.lineTo(bx, by);
+                ctx.moveTo(w, 0); ctx.lineTo(bx + bw, by);
+                ctx.moveTo(0, h); ctx.lineTo(bx, by + bh);
+                ctx.moveTo(w, h); ctx.lineTo(bx + bw, by + bh);
+                ctx.stroke();
+
+                // Main Entry Door Outline
+                const doorW = bw * 0.28;
+                const doorH = bh * 0.78;
+                const doorX = bx + bw * 0.14;
+                const doorY = by + bh - doorH;
+                ctx.fillStyle = night ? 'rgba(22, 101, 52, 0.22)' : 'rgba(30, 41, 59, 0.55)';
+                ctx.fillRect(doorX, doorY, doorW, doorH);
+                ctx.strokeRect(doorX, doorY, doorW, doorH);
+
+                // Smart Light Glow when Switch 1 (Living Light) is ON
+                if (state.switches[0].state) {
+                    const lampGrad = ctx.createRadialGradient(w * 0.5, by + 8, 4, w * 0.5, by + 30, w * 0.35);
+                    lampGrad.addColorStop(0, night ? 'rgba(187, 247, 208, 0.35)' : 'rgba(253, 224, 71, 0.30)');
+                    lampGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                    ctx.fillStyle = lampGrad;
+                    ctx.fillRect(0, 0, w, h);
+                }
+
+                // Window on right side of back wall
+                const winW = bw * 0.32;
+                const winH = bh * 0.38;
+                const winX = bx + bw * 0.56;
+                const winY = by + bh * 0.18;
+                ctx.fillStyle = night ? 'rgba(34, 197, 94, 0.10)' : 'rgba(56, 189, 248, 0.14)';
+                ctx.fillRect(winX, winY, winW, winH);
+                ctx.strokeRect(winX, winY, winW, winH);
+
+                // Animated Moving Figure when Motion is triggered
+                if (state.camPersonActive) {
+                    const px = state.camPersonX;
+                    const py = by + bh - 10;
+                    const scale = Math.max(0.6, h / 320);
+
+                    ctx.save();
+                    // Silhouette
+                    ctx.fillStyle = night ? 'rgba(134, 239, 172, 0.65)' : 'rgba(226, 232, 240, 0.7)';
+                    ctx.beginPath();
+                    ctx.arc(px, py - 68 * scale, 11 * scale, 0, Math.PI * 2); // head
+                    ctx.fill();
+                    ctx.fillRect(px - 12 * scale, py - 54 * scale, 24 * scale, 34 * scale); // torso
+                    ctx.fillRect(px - 10 * scale, py - 20 * scale, 8 * scale, 22 * scale);  // leg L
+                    ctx.fillRect(px + 2 * scale, py - 20 * scale, 8 * scale, 22 * scale);   // leg R
+
+                    // AI Motion Tracking Bounding Box
+                    ctx.strokeStyle = '#f43f5e';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(px - 20 * scale, py - 84 * scale, 40 * scale, 90 * scale);
+                    ctx.fillStyle = '#f43f5e';
+                    ctx.font = 'bold 10px monospace';
+                    ctx.fillText('PERSON 96%', px - 22 * scale, py - 88 * scale);
+                    ctx.restore();
+
+                    if (!state.camPaused) {
+                        state.camPersonX += 2.2;
+                        if (state.camPersonX > w + 40) {
+                            state.camPersonActive = false;
+                        }
+                    }
+                }
+
+                // Subtle CCTV Scanlines
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.14)';
+                for (let y = 0; y < h; y += 4) {
+                    ctx.fillRect(0, y, w, 1);
+                }
+
+                // Center Camera Crosshair
+                ctx.strokeStyle = night ? 'rgba(74, 222, 128, 0.35)' : 'rgba(34, 211, 238, 0.35)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(w / 2 - 12, h / 2); ctx.lineTo(w / 2 + 12, h / 2);
+                ctx.moveTo(w / 2, h / 2 - 12); ctx.lineTo(w / 2, h / 2 + 12);
+                ctx.stroke();
+
+                // Bottom-Right Watermark
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
+                ctx.font = 'bold 11px monospace';
+                ctx.textAlign = 'right';
+                ctx.fillText(`PIYUSH HOME • ${el.camResSelect.value}`, w - 12, h - 12);
+                ctx.textAlign = 'left';
+            }
+
+            /** CCTV Animation Loop */
+            function animateCctv() {
+                if (!state.useRealStream && !state.camPaused) {
+                    drawCctvFrame();
+                    state.camFrameCount++;
+                }
+                requestAnimationFrame(animateCctv);
+            }
+
+            /** Switch between Simulated CCTV Canvas and Real ESP32-CAM MJPEG Stream */
+            function setRealStreamMode(enable) {
+                state.useRealStream = enable;
+                if (enable) {
+                    el.esp32StreamImg.src = state.esp32CamUrl;
+                    el.esp32StreamImg.classList.remove('hidden');
+                    el.cctvCanvas.classList.add('hidden');
+                    el.cctvModeTag.textContent = 'ESP32 LIVE IP';
+                    el.cctvModeTag.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30';
+                    el.toggleLiveStreamBtn.textContent = 'Back to Sim';
+                    addEventLog(`Connecting to ESP32-CAM stream: ${state.esp32CamUrl}`, 'info');
+                } else {
+                    el.esp32StreamImg.removeAttribute('src');
+                    el.esp32StreamImg.classList.add('hidden');
+                    el.cctvCanvas.classList.remove('hidden');
+                    el.cctvModeTag.textContent = 'SIMULATED CAM';
+                    el.cctvModeTag.className = 'px-2 py-0.5 rounded-md text-[10px] font-bold bg-rose-500/15 text-rose-500 border border-rose-500/30';
+                    el.toggleLiveStreamBtn.textContent = 'Connect Real IP';
+                    resizeCctvCanvas();
+                }
+            }
+
+            // Fallback gracefully if Real ESP32-CAM IP cannot be reached
+            el.esp32StreamImg.addEventListener('error', () => {
+                if (state.useRealStream) {
+                    showToast('ESP32-CAM stream unreachable. Reverting to Simulated CCTV.', 'warn');
+                    addEventLog('ESP32-CAM IP stream failed to load; switched to simulator.', 'warn');
+                    setRealStreamMode(false);
+                }
+            });
+
+            /* ----------------------------------------------------------------
+               8. LIVE DATA SIMULATION & HARDWARE POLLING
+               ---------------------------------------------------------------- */
+
+            async function updateTelemetry() {
+                if (state.useHardware) {
+                    try {
+                        const res = await fetch(`${state.esp32BaseUrl}/api/sensors`, { cache: 'no-store' });
+                        if (!res.ok) throw new Error('HTTP ' + res.status);
+                        const data = await res.json();
+                        if (typeof data.temp === 'number') state.tempC = data.temp;
+                        if (typeof data.humidity === 'number') state.humidity = data.humidity;
+                        if (typeof data.mq2 === 'number') state.mq2Ppm = data.mq2;
+                        if (typeof data.mq135 === 'number') state.mq135Ppm = data.mq135;
+                        if (data.motion && !state.motionDetected) triggerMotionEvent();
+                    } catch (err) {
+                        // Keep running smoothly even if ESP32 is temporarily offline
+                    }
+                } else {
+                    // Realistic smooth environmental drift
+                    state.tempC = Math.max(18, Math.min(40, state.tempC + (Math.random() - 0.5) * 0.4));
+                    state.humidity = Math.max(25, Math.min(88, state.humidity + (Math.random() - 0.5) * 1.4));
+
+                    // MQ-2 decay back to safe baseline if spike was tested
+                    if (state.gasSpikeTimer > 0) {
+                        state.gasSpikeTimer--;
+                        state.mq2Ppm = 460 + Math.random() * 90;
+                    } else {
+                        state.mq2Ppm += (145 - state.mq2Ppm) * 0.25 + (Math.random() - 0.5) * 14;
+                    }
+
+                    // MQ-135 decay back to fresh air baseline if poor air was tested
+                    if (state.airSpikeTimer > 0) {
+                        state.airSpikeTimer--;
+                        state.mq135Ppm = 1080 + Math.random() * 140;
+                    } else {
+                        state.mq135Ppm += (420 - state.mq135Ppm) * 0.25 + (Math.random() - 0.5) * 20;
+                    }
+                }
+
+                // Update Temperature sparkline history
+                state.tempHistory.push(state.tempC);
+                if (state.tempHistory.length > 14) state.tempHistory.shift();
+
+                renderSensors();
+            }
+
+            /** Update Digital Clock & CCTV Timestamp every second */
+            function updateClocks() {
+                const now = new Date();
+                const timeStr = now.toTimeString().split(' ')[0];
+                const dateStr = now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+                const isoStamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${timeStr}`;
+
+                el.liveTime.textContent = timeStr;
+                el.liveDate.textContent = dateStr;
+                el.cctvTimestamp.textContent = isoStamp;
+                el.cctvFps.textContent = state.camPaused ? 'PAUSED' : `${22 + Math.floor(Math.random() * 4)} FPS`;
+            }
+
+            /* ----------------------------------------------------------------
+               9. EVENT LISTENERS & INTERACTIONS
+               ---------------------------------------------------------------- */
+
+            // Theme Toggle
+            el.themeToggleBtn.addEventListener('click', () => {
+                document.documentElement.classList.toggle('dark');
+            });
+
+            // Dismiss Alert Banner
+            el.dismissAlertBtn.addEventListener('click', () => {
+                el.globalAlertBanner.classList.add('hidden');
+            });
+
+            // Temp Unit Toggle (°C / °F)
+            el.tempUnitToggle.addEventListener('click', () => {
+                state.tempUnit = state.tempUnit === 'C' ? 'F' : 'C';
+                renderSensors();
+            });
+
+            // MQ-2 Test Spike
+            el.simGasBtn.addEventListener('click', () => {
+                state.gasSpikeTimer = 4;
+                state.mq2Ppm = 510;
+                renderSensors();
+                addEventLog('Simulated MQ-2 Gas/Smoke spike (510 PPM)', 'danger');
+                showToast('MQ-2 Gas Alarm simulated! Auto-clears in ~10s.', 'error');
+            });
+
+            // MQ-135 Test Poor Air
+            el.simAirBtn.addEventListener('click', () => {
+                state.airSpikeTimer = 4;
+                state.mq135Ppm = 1140;
+                renderSensors();
+                addEventLog('Simulated MQ-135 Poor Air Quality spike (1140 PPM)', 'warn');
+                showToast('MQ-135 Poor Air Quality simulated!', 'warn');
+            });
+
+            // PIR Motion Sensor Controls
+            el.armMotionBtn.addEventListener('click', () => {
+                state.motionArmed = !state.motionArmed;
+                renderMotionSensor();
+                addEventLog(`Motion Sensor ${state.motionArmed ? 'ARMED' : 'DISARMED'}`, 'info');
+            });
+
+            el.simMotionBtn.addEventListener('click', () => {
+                triggerMotionEvent();
+            });
+
+            // ESP32-CAM CCTV Controls
+            el.toggleLiveStreamBtn.addEventListener('click', () => {
+                setRealStreamMode(!state.useRealStream);
+            });
+
+            el.camFlashBtn.addEventListener('click', () => {
+                state.camFlashOn = !state.camFlashOn;
+                el.camFlashText.textContent = `Flash: ${state.camFlashOn ? 'ON' : 'OFF'}`;
+                addEventLog(`ESP32-CAM Flash LED turned ${state.camFlashOn ? 'ON' : 'OFF'}`, 'info');
+                drawCctvFrame();
+            });
+
+            el.camNightBtn.addEventListener('click', () => {
+                state.camNightVision = !state.camNightVision;
+                el.camNightText.textContent = `Night IR: ${state.camNightVision ? 'ON' : 'OFF'}`;
+                drawCctvFrame();
+            });
+
+            el.camPauseBtn.addEventListener('click', () => {
+                state.camPaused = !state.camPaused;
+                el.camPauseText.textContent = state.camPaused ? 'Resume Feed' : 'Pause Feed';
+                showToast(state.camPaused ? 'CCTV feed paused.' : 'CCTV feed resumed.', 'info');
+            });
+
+            el.camSnapshotBtn.addEventListener('click', () => {
+                try {
+                    const link = document.createElement('a');
+                    link.download = `PIYUSH_HOME_CCTV_${Date.now()}.png`;
+                    link.href = el.cctvCanvas.toDataURL('image/png');
+                    link.click();
+                    addEventLog('CCTV Snapshot saved to device.', 'success');
+                    showToast('CCTV Snapshot downloaded!', 'success');
+                } catch (err) {
+                    showToast('Snapshot saved (Canvas preview captured).', 'info');
+                }
+            });
+
+            // 20x4 LCD Controls
+            el.lcdBacklightBtn.addEventListener('click', () => {
+                state.lcdBacklightOn = !state.lcdBacklightOn;
+                renderLcdDisplay();
+            });
+
+            el.lcdColorBtn.addEventListener('click', () => {
+                state.lcdColor = state.lcdColor === 'blue' ? 'green' : 'blue';
+                renderLcdDisplay();
+            });
+
+            el.lcdTabLive.addEventListener('click', () => {
+                state.lcdMode = 'live';
+                el.lcdTabLive.className = 'py-2 px-3 rounded-lg text-xs font-bold bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400 shadow-sm transition';
+                el.lcdTabCustom.className = 'py-2 px-3 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition';
+                el.lcdLivePanel.classList.remove('hidden');
+                el.lcdCustomPanel.classList.add('hidden');
+                renderLcdDisplay();
+            });
+
+            el.lcdTabCustom.addEventListener('click', () => {
+                state.lcdMode = 'custom';
+                el.lcdTabCustom.className = 'py-2 px-3 rounded-lg text-xs font-bold bg-white dark:bg-slate-700 text-cyan-600 dark:text-cyan-400 shadow-sm transition';
+                el.lcdTabLive.className = 'py-2 px-3 rounded-lg text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 transition';
+                el.lcdCustomPanel.classList.remove('hidden');
+                el.lcdLivePanel.classList.add('hidden');
+                renderLcdDisplay();
+            });
+
+            // LCD Live Page Selector Buttons
+            document.querySelectorAll('.lcd-page-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    state.lcdLivePage = btn.getAttribute('data-lcd-page');
+                    document.querySelectorAll('.lcd-page-btn').forEach(b => {
+                        b.className = 'lcd-page-btn px-3 py-2 rounded-xl text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 transition';
+                    });
+                    btn.className = 'lcd-page-btn px-3 py-2 rounded-xl text-xs font-semibold bg-cyan-600 text-white border border-cyan-500 transition';
+                    renderLcdDisplay();
+                });
+            });
+
+            // Live 20-char counters & live preview for Custom LCD Inputs
+            el.lcdInputs.forEach((input, idx) => {
+                input.addEventListener('input', () => {
+                    el.lcdCounts[idx].textContent = `${input.value.length}/20`;
+                    state.lcdCustomLines[idx] = padLcd20(input.value);
+                    if (state.lcdMode === 'custom') {
+                        renderLcdDisplay();
+                    }
+                });
+            });
+
+            el.sendLcdBtn.addEventListener('click', () => {
+                state.lcdMode = 'custom';
+                state.lcdCustomLines = el.lcdInputs.map(inp => padLcd20(inp.value));
+                renderLcdDisplay();
+                pushLcdToHardware(state.lcdCustomLines);
+                addEventLog('Custom 20×4 message sent to LCD display.', 'success');
+                showToast('Custom message displayed on 20×4 LCD!', 'success');
+            });
+
+            el.centerLcdBtn.addEventListener('click', () => {
+                el.lcdInputs.forEach((inp, idx) => {
+                    const centered = centerLcd20(inp.value);
+                    inp.value = centered;
+                    el.lcdCounts[idx].textContent = `${centered.length}/20`;
+                    state.lcdCustomLines[idx] = centered;
+                });
+                renderLcdDisplay();
+            });
+
+            el.clearLcdBtn.addEventListener('click', () => {
+                el.lcdInputs.forEach((inp, idx) => {
+                    inp.value = '';
+                    el.lcdCounts[idx].textContent = '0/20';
+                    state.lcdCustomLines[idx] = padLcd20('');
+                });
+                renderLcdDisplay();
+                pushLcdToHardware(state.lcdCustomLines);
+                showToast('20×4 LCD cleared.', 'info');
+            });
+
+            // Master All ON / All OFF Switches
+            el.allSwitchesOnBtn.addEventListener('click', () => {
+                state.switches.forEach(sw => toggleSwitch(sw.id, true));
+                showToast('All 5 switches turned ON.', 'success');
+            });
+
+            el.allSwitchesOffBtn.addEventListener('click', () => {
+                state.switches.forEach(sw => toggleSwitch(sw.id, false));
+                showToast('All 5 switches turned OFF.', 'info');
+            });
+
+            // Clear Event Log
+            el.clearLogBtn.addEventListener('click', () => {
+                el.eventLogList.innerHTML = '';
+                addEventLog('Event log cleared.', 'info');
+            });
+
+            // Rename Switch Modal Logic
+            function openRenameModal(id) {
+                const sw = state.switches.find(s => s.id === id);
+                if (!sw) return;
+                state.renamingSwitchId = id;
+                el.renameSwitchInput.value = sw.name;
+                el.renameModal.classList.remove('hidden');
+                el.renameSwitchInput.focus();
+            }
+
+            el.cancelRenameBtn.addEventListener('click', () => {
+                el.renameModal.classList.add('hidden');
+            });
+
+            el.saveRenameBtn.addEventListener('click', () => {
+                const sw = state.switches.find(s => s.id === state.renamingSwitchId);
+                const newName = el.renameSwitchInput.value.trim();
+                if (sw && newName) {
+                    sw.name = newName;
+                    renderSwitches();
+                    addEventLog(`Switch ${sw.id} renamed to "${newName}"`, 'info');
+                    showToast(`Renamed Switch ${sw.id} to ${newName}`, 'success');
+                }
+                el.renameModal.classList.add('hidden');
+            });
+
+            // ESP32 Settings Modal Logic
+            function syncHardwareToggleUi(enabled) {
+                el.hardwareModeToggle.setAttribute('aria-checked', String(enabled));
+                if (enabled) {
+                    el.hardwareModeToggle.className = 'relative inline-flex h-6 w-11 items-center rounded-full bg-cyan-500 transition-colors';
+                    el.hardwareModeKnob.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6';
+                } else {
+                    el.hardwareModeToggle.className = 'relative inline-flex h-6 w-11 items-center rounded-full bg-slate-400 dark:bg-slate-600 transition-colors';
+                    el.hardwareModeKnob.className = 'inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1';
+                }
+            }
+
+            let tempHardwareFlag = state.useHardware;
+
+            el.openSettingsBtn.addEventListener('click', () => {
+                tempHardwareFlag = state.useHardware;
+                syncHardwareToggleUi(tempHardwareFlag);
+                el.esp32IpInput.value = state.esp32BaseUrl;
+                el.esp32CamUrlInput.value = state.esp32CamUrl;
+                el.settingsModal.classList.remove('hidden');
+            });
+
+            el.hardwareModeToggle.addEventListener('click', () => {
+                tempHardwareFlag = !tempHardwareFlag;
+                syncHardwareToggleUi(tempHardwareFlag);
+            });
+
+            [el.closeSettingsBtn, el.cancelSettingsBtn].forEach(btn => {
+                btn.addEventListener('click', () => el.settingsModal.classList.add('hidden'));
+            });
+
+            el.saveSettingsBtn.addEventListener('click', () => {
+                state.useHardware = tempHardwareFlag;
+                state.esp32BaseUrl = el.esp32IpInput.value.trim() || 'http://192.168.1.100';
+                state.esp32CamUrl = el.esp32CamUrlInput.value.trim() || 'http://192.168.1.101:81/stream';
+                el.cctvUrlLabel.textContent = `Stream: ${state.esp32CamUrl}`;
+
+                if (state.useHardware) {
+                    el.connectionBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>ESP32 LIVE`;
+                    el.connectionBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30';
+                    addEventLog(`Switched to ESP32 Hardware Mode (${state.esp32BaseUrl})`, 'success');
+                } else {
+                    el.connectionBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>SIMULATION`;
+                    el.connectionBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30';
+                    addEventLog('Switched to Built-in Simulation Mode.', 'info');
+                }
+
+                el.settingsModal.classList.add('hidden');
+                showToast('ESP32 configuration saved!', 'success');
+            });
+
+            /* ----------------------------------------------------------------
+               10. INITIALIZATION ON WINDOW LOAD
+               ---------------------------------------------------------------- */
+            window.addEventListener('resize', resizeCctvCanvas);
+
+            window.onload = function () {
+                renderSensors();
+                renderMotionSensor();
+                renderSwitches();
+                renderLcdDisplay();
+                updateClocks();
+                resizeCctvCanvas();
+
+                addEventLog('PIYUSH HOME IoT Dashboard initialized successfully.', 'success');
+
+                // Start periodic updates
+                setInterval(updateClocks, 1000);
+                setInterval(updateTelemetry, 2500);
+                setInterval(() => {
+                    if (state.lcdMode === 'live' && state.lcdLivePage === 'auto') {
+                        state.lcdAutoIndex++;
+                        renderLcdDisplay();
+                    }
+                }, 4000);
+
+                // Start CCTV animation loop
+                animateCctv();
+            };
+        })();
+    </script>
+</body>
+</html>
