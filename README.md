@@ -4,7 +4,8 @@ A responsive web dashboard for monitoring and controlling **PIYUSH HOME**, built
 
 ## Preview
 
-![PIYUSH HOME README & Hardware Setup Preview](assets/piyush-home-preview.png)
+![Alt text](Screenshot 2026-11-24 145627.png)
+
 
 > Save the image above as `assets/piyush-home-preview.png` (or update the path to your hosted screenshot URL) so it renders cleanly in your GitHub repository.
 
