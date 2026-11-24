@@ -5,6 +5,7 @@ A responsive web dashboard for monitoring and controlling **PIYUSH HOME**, built
 ## Preview
 
 ![image alt](https://github.com/Piyush9301/PIYUSH-HOME-Smart-Home-IoT-Security/blob/main/Screenshot%202026-11-24%20145627.png)
+![image alt](https://github.com/Piyush9301/PIYUSH-HOME-Smart-Home-IoT-Security/blob/28e5819e9b3d4551768be6edb2af1b7a73bcb41c/Screenshot%202026-11-24%20145644.png)
 
 
 > Save the image above as `assets/piyush-home-preview.png` (or update the path to your hosted screenshot URL) so it renders cleanly in your GitHub repository.
